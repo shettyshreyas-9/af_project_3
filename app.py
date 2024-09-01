@@ -1,22 +1,29 @@
 import os
-from airflow import settings
-from airflow.models import DagBag
-from airflow.www.app import create_app
+import subprocess
 
-def run_airflow_webserver():
-    # Initialize Airflow configuration
+def start_airflow():
+    # Set the environment variable for Airflow home
     os.environ['AIRFLOW_HOME'] = os.path.join(os.getcwd(), 'airflow_home')
-    os.environ['AIRFLOW__CORE__LOAD_EXAMPLES'] = 'False'
-    os.environ['AIRFLOW__WEBSERVER__WEB_SERVER_PORT'] = '8080'
-
-    # Load the DAGs from the dags/ directory
-    dag_bag = DagBag()
-
-    # Create the web server app
-    app = create_app()
     
-    # Run the web server
-    app.run(debug=True, port=8080)
+    # Initialize the Airflow database
+    subprocess.run(["airflow", "db", "init"])
+    
+    # Start the Airflow web server
+    webserver = subprocess.Popen(["airflow", "webserver"])
+    
+    # Start the Airflow scheduler
+    scheduler = subprocess.Popen(["airflow", "scheduler"])
+    
+    return webserver, scheduler
 
 if __name__ == "__main__":
-    run_airflow_webserver()
+    webserver, scheduler = start_airflow()
+    
+    try:
+        # Keep the script running to keep the processes alive
+        webserver.wait()
+        scheduler.wait()
+    except KeyboardInterrupt:
+        # Gracefully stop the processes on exit
+        webserver.terminate()
+        scheduler.terminate()
