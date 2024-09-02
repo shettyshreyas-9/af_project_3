@@ -4,19 +4,21 @@ FROM python:3.8-slim
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Install Docker CLI and docker-compose
+# Install Docker CLI and the latest stable version of docker-compose
 RUN apt-get update && \
     apt-get install -y \
     docker.io \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
+    -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose
 
-# Install docker-compose
-RUN pip install --no-cache-dir docker-compose
-
-# Copy the current directory contents into the container at /usr/src/app
+# Copy the application files into the container
 COPY . .
 
+# Expose the port that the app will run on
 EXPOSE 8080
-# Make the container's default command be the Docker CLI
-# CMD ["docker-compose", "--version"]
+
+# Run the app.py script
 CMD ["python", "app.py"]
