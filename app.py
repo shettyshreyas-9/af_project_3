@@ -1,29 +1,14 @@
 import os
 import subprocess
+import platform
+import sys
 
-def start_airflow():
-    # Set the environment variable for Airflow home
-    os.environ['AIRFLOW_HOME'] = os.path.join(os.getcwd(), 'airflow_home')
-    
-    # Initialize the Airflow database
-    subprocess.run(["airflow", "db", "init"])
-    
-    # Start the Airflow web server
-    webserver = subprocess.Popen(["airflow", "webserver"])
-    
-    # Start the Airflow scheduler
-    scheduler = subprocess.Popen(["airflow", "scheduler"])
-    
-    return webserver, scheduler
-
-if __name__ == "__main__":
-    webserver, scheduler = start_airflow()
-    
+def run_docker_compose():
     try:
-        # Keep the script running to keep the processes alive
-        webserver.wait()
-        scheduler.wait()
-    except KeyboardInterrupt:
-        # Gracefully stop the processes on exit
-        webserver.terminate()
-        scheduler.terminate()
+        # Execute the docker-compose up --build command
+        subprocess.run(["docker-compose", "up","--build"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to execute docker-compose: {e}")
+ 
+if __name__ == "__main__":
+    run_docker_compose()

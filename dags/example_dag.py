@@ -1,16 +1,29 @@
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-from datetime import datetime
+from airflow.operators.dummy_operator import DummyOperator
+from airflow.utils.dates import days_ago
 
-def print_hello():
-    return 'Hello world!'
-
+# Define default_args
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2023, 1, 1),
-    'retries': 1
+    'retries': 1,
 }
 
-with DAG('hello_world_dag', default_args=default_args, schedule_interval='@daily', catchup=False) as dag:
-    hello_operator = PythonOperator(task_id='hello_task', python_callable=print_hello)
+# Define the DAG
+with DAG(
+    'example_dag',
+    default_args=default_args,
+    description='An example DAG',
+    schedule_interval='@daily',
+    start_date=days_ago(1),
+    catchup=False,
+) as dag:
 
+    start = DummyOperator(
+        task_id='start',
+    )
+
+    end = DummyOperator(
+        task_id='end',
+    )
+
+    start >> end
